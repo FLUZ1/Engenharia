@@ -9,705 +9,1056 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Chosen Palette: Warm Neutrals -->
-    <!-- Application Structure Plan: O fluxo da aplicação foi refinado para: Ecossistema -> Agentes -> Quadro de Resp. -> Gerenciador/Fiscal -> Norma NBR 5671 -> Patologias -> Prazos -> Análise -> Ética -> Conclusão -> Referências. A seção 'Patologias' foi significativamente expandida para incluir uma classificação detalhada de vícios e uma tipologia de defeitos, baseada no novo documento. Esta ampliação oferece um aprofundamento técnico crucial antes de abordar os prazos e a análise de responsabilidade. -->
-    <!-- Visualization & Content Choices: 1) Seção Patologias: A seção foi redesenhada. Além da distinção Vício vs. Defeito, adicionei uma nova interface de abas (HTML/JS) para classificar os 'Tipos de Vícios' (Aparentes/Ocultos, Qualidade/Quantidade, etc.) e uma seção de cards para a 'Tipologia dos Defeitos' (Concepção, Produção, Informação). Esta abordagem estruturada transforma o conteúdo denso do PDF em segmentos de informação interativos e de fácil digestão. As visualizações existentes (gráfico de pizza, abas de fissuras) foram mantidas para complementar a nova estrutura. Nenhuma SVG ou Mermaid foi utilizada. -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Nunito+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg-ivory:    #F3F1EC;
+            --bg-white:    #FFFFFF;
+            --navy-deep:   #192840;
+            --navy-mid:    #243B55;
+            --copper:      #A8703A;
+            --copper-light:#C8914E;
+            --copper-pale: #F2E8DA;
+            --copper-mist: #FAF3EB;
+            --text-main:   #1A1918;
+            --text-muted:  #696560;
+            --text-light:  #9B9590;
+            --border:      #DDD7CC;
+            --shadow-sm:   0 1px 3px rgba(26,41,64,0.07);
+            --shadow-md:   0 4px 16px rgba(26,41,64,0.09);
+            --shadow-lg:   0 12px 40px rgba(26,41,64,0.12);
+        }
+
+        * { box-sizing: border-box; }
+
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #F8F7F4;
-            color: #403D39;
+            font-family: 'Nunito Sans', sans-serif;
+            background-color: var(--bg-ivory);
+            color: var(--text-main);
+            line-height: 1.7;
         }
-        .nav-btn {
-            transition: all 0.3s ease;
+
+        /* ── TYPOGRAPHY ── */
+        h1, h2, h3 {
+            font-family: 'Playfair Display', serif;
+            letter-spacing: -0.01em;
         }
-        .nav-btn.active {
-            background-color: #A0522D;
+        h2 { font-size: clamp(1.6rem, 3.5vw, 2.4rem); color: var(--navy-deep); }
+        h3 { color: var(--navy-mid); }
+        .subtitle {
+            font-family: 'Nunito Sans', sans-serif;
+            font-size: 1rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            max-width: 640px;
+            margin: 0.5rem auto 2.5rem;
+            line-height: 1.6;
+        }
+
+        /* ── HEADER ── */
+        header {
+            background-color: var(--navy-deep);
+            box-shadow: 0 2px 16px rgba(25,40,64,0.25);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .site-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(0.95rem, 2.2vw, 1.2rem);
+            font-weight: 700;
             color: #FFFFFF;
+            letter-spacing: 0.01em;
+            line-height: 1.3;
+        }
+        .title-accent { color: var(--copper-light); }
+
+        /* ── NAV ── */
+        #navbar { display: flex; flex-wrap: wrap; gap: 0.25rem; }
+        .nav-btn {
+            font-family: 'Nunito Sans', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            padding: 0.35rem 0.7rem;
+            border-radius: 4px;
+            color: rgba(255,255,255,0.65);
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+            white-space: nowrap;
         }
         .nav-btn:hover:not(.active) {
-            background-color: #D2B48C;
+            color: #fff;
+            background: rgba(255,255,255,0.1);
         }
+        .nav-btn.active {
+            background-color: var(--copper);
+            color: #fff;
+            border-color: var(--copper);
+        }
+
+        /* ── HAMBURGER ── */
+        #menu-toggle { display: none; background: none; border: none; cursor: pointer; }
+        #menu-toggle span {
+            display: block; width: 24px; height: 2px;
+            background: #fff; margin: 5px 0; border-radius: 2px;
+            transition: all 0.25s ease;
+        }
+        #nav-wrapper { display: flex; }
+        @media (max-width: 768px) {
+            #menu-toggle { display: block; }
+            #nav-wrapper {
+                display: none; width: 100%;
+                background: var(--navy-mid);
+                padding: 1rem;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            #nav-wrapper.open { display: flex; }
+            .nav-btn { font-size: 0.8rem; width: 100%; text-align: left; padding: 0.5rem 0.75rem; }
+        }
+
+        /* ── SECTIONS ── */
+        section { padding: 5rem 0; }
+        section + section { border-top: 1px solid var(--border); }
+        .section-white {
+            background: var(--bg-white);
+            border-radius: 16px;
+            box-shadow: var(--shadow-md);
+            margin: 0 -0.5rem;
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+
+        /* ── CARDS ── */
         .card {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            background: var(--bg-white);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            box-shadow: var(--shadow-sm);
         }
         .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
         }
+        .card-copper {
+            background: var(--bg-white);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--copper);
+            border-radius: 0 10px 10px 0;
+            box-shadow: var(--shadow-sm);
+        }
+        .card-navy {
+            background: var(--bg-white);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--navy-mid);
+            border-radius: 0 10px 10px 0;
+        }
+
+        /* ── ACCENT LABELS ── */
+        .label-copper {
+            display: inline-block;
+            font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em;
+            text-transform: uppercase; color: var(--copper);
+            background: var(--copper-pale); border-radius: 4px;
+            padding: 0.2rem 0.6rem; margin-bottom: 0.5rem;
+        }
+        .label-navy {
+            display: inline-block;
+            font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em;
+            text-transform: uppercase; color: var(--navy-deep);
+            background: #E8EEF5; border-radius: 4px;
+            padding: 0.2rem 0.6rem; margin-bottom: 0.5rem;
+        }
+
+        /* ── TABS ── */
+        .tab-btn {
+            font-family: 'Nunito Sans', sans-serif;
+            font-size: 0.85rem; font-weight: 600;
+            color: var(--text-muted);
+            padding: 0.6rem 1rem;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        .tab-btn:hover { color: var(--navy-deep); }
         .tab-btn.active {
-            border-bottom: 2px solid #A0522D;
-            color: #A0522D;
-            font-weight: 600;
+            color: var(--copper);
+            border-bottom-color: var(--copper);
         }
-        .chart-container {
-            position: relative;
-            width: 100%;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-            height: 300px;
-            max-height: 400px;
+        .tab-content { background: var(--bg-ivory); border-radius: 10px; padding: 1.5rem; }
+
+        /* ── CUSTOM TABS (pills) ── */
+        .custom-tab {
+            font-size: 0.8rem; font-weight: 600;
+            padding: 0.35rem 0.85rem;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            background: var(--bg-white);
+            transition: all 0.2s ease;
         }
-        @media (min-width: 768px) {
-            .chart-container {
-                height: 400px;
-            }
+        .custom-tab:hover { border-color: var(--copper); color: var(--copper); }
+        .custom-tab.active {
+            background: var(--navy-deep);
+            color: #fff;
+            border-color: var(--navy-deep);
         }
+
+        /* ── DIAGRAM ── */
         .diagram-node {
             cursor: pointer;
-            transition: all 0.2s ease-in-out;
+            transition: all 0.2s ease;
+            font-family: 'Nunito Sans', sans-serif;
+            font-size: 0.8rem;
+            background: var(--bg-white);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            box-shadow: var(--shadow-sm);
+            text-align: center;
+            padding: 0.5rem 0.75rem;
         }
+        .diagram-node strong { color: var(--navy-deep); font-weight: 700; font-size: 0.85rem; display: block; }
         .diagram-node:hover {
-            transform: scale(1.05);
-            background-color: #D2B48C;
+            background: var(--copper-pale);
+            border-color: var(--copper);
+            transform: scale(1.06);
+            box-shadow: var(--shadow-md);
         }
-        .custom-tab.active {
-            background-color: #A0522D;
-            color: white;
+
+        /* ── CHART ── */
+        .chart-container {
+            position: relative;
+            width: 100%; max-width: 560px;
+            margin: 0 auto;
+            height: 300px;
         }
-        .resp-card {
-            background-color: white;
-            border-left: 4px solid #A0522D;
+        @media (min-width: 768px) { .chart-container { height: 380px; } }
+
+        /* ── TABLE ── */
+        .matrix-table thead tr { background: var(--navy-deep); }
+        .matrix-table thead th {
+            color: rgba(255,255,255,0.85);
+            font-family: 'Nunito Sans', sans-serif;
+            font-size: 0.72rem; font-weight: 700;
+            letter-spacing: 0.08em; text-transform: uppercase;
+            padding: 1rem 1.25rem;
         }
+        .matrix-table tbody tr { transition: background 0.15s; }
+        .matrix-table tbody tr:hover { background: var(--copper-mist); }
+        .matrix-table tbody td { padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+        .matrix-table .agent-name {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700; font-size: 0.95rem;
+            color: var(--copper);
+        }
+
+        /* ── HIGHLIGHT BOXES ── */
+        .highlight-copper {
+            background: var(--copper-pale);
+            border-left: 4px solid var(--copper);
+            border-radius: 0 10px 10px 0;
+            padding: 1.5rem;
+        }
+        .highlight-navy {
+            background: #E8EFF8;
+            border-left: 4px solid var(--navy-mid);
+            border-radius: 0 10px 10px 0;
+            padding: 1.5rem;
+        }
+        .highlight-copper h3 { color: var(--copper); font-family: 'Playfair Display', serif; }
+        .highlight-navy h3 { color: var(--navy-deep); font-family: 'Playfair Display', serif; }
+
+        /* ── PRAZO CARDS ── */
+        .prazo-card {
+            background: var(--bg-white);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+            transition: box-shadow 0.2s;
+        }
+        .prazo-card:hover { box-shadow: var(--shadow-lg); }
+        .prazo-number {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.6rem; font-weight: 800;
+            color: var(--navy-deep);
+            line-height: 1;
+        }
+        .prazo-unit { font-size: 0.85rem; font-weight: 700; color: var(--copper); text-transform: uppercase; letter-spacing: 0.08em; }
+        .prazo-icon { font-size: 2rem; margin-bottom: 0.75rem; display: block; }
+
+        /* ── SECTION DIVIDER ── */
+        .section-rule {
+            width: 48px; height: 3px;
+            background: var(--copper);
+            border-radius: 2px;
+            margin: 0.75rem auto 0;
+        }
+
+        /* ── FOOTER ── */
+        footer {
+            background: var(--navy-deep);
+            color: rgba(255,255,255,0.6);
+            padding: 2.5rem 1rem;
+            text-align: center;
+        }
+        footer strong { color: rgba(255,255,255,0.9); font-family: 'Playfair Display', serif; }
+
+        /* ── FADE IN ── */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(18px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        .fade-in.visible { opacity: 1; transform: none; }
+
+        /* ── SCROLL INDICATOR ── */
+        #progress-bar {
+            position: fixed; top: 0; left: 0; height: 3px;
+            background: linear-gradient(90deg, var(--copper), var(--copper-light));
+            z-index: 200; width: 0%; transition: width 0.1s linear;
+        }
+
+        /* ── MISC ── */
+        .resp-card { background: var(--bg-white); border-left: 4px solid var(--copper); border-radius: 0 10px 10px 0; box-shadow: var(--shadow-sm); }
+        ul.styled li { position: relative; padding-left: 1.2rem; margin-bottom: 0.4rem; font-size: 0.9rem; color: var(--text-muted); }
+        ul.styled li::before { content: '–'; position: absolute; left: 0; color: var(--copper); font-weight: 700; }
+        strong, b { color: var(--navy-deep); }
     </style>
 </head>
 <body class="antialiased">
-    <header class="bg-white shadow-md sticky top-0 z-50">
-        <div class="container mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center">
-            <h1 class="text-xl md:text-2xl font-bold text-[#A0522D]">Análise de Responsabilidade na Construção Civil</h1>
-            <nav id="navbar" class="flex flex-wrap justify-center gap-1 sm:gap-2 mt-4 sm:mt-0">
-                <button data-target="ecossistema" class="nav-btn px-2 py-2 rounded-md text-xs sm:text-sm font-medium active">Ecossistema</button>
-                <button data-target="agentes" class="nav-btn px-2 py-2 rounded-md text-xs sm:text-sm font-medium">Agentes</button>
-                <button data-target="quadro-responsabilidades" class="nav-btn px-2 py-2 rounded-md text-xs sm:text-sm font-medium">Quadro de Resp.</button>
-                <button data-target="gerenciador-fiscal" class="nav-btn px-2 py-2 rounded-md text-xs sm:text-sm font-medium">Gerenciador/Fiscal</button>
-                <button data-target="norma-nbr5671" class="nav-btn px-2 py-2 rounded-md text-xs sm:text-sm font-medium">Norma NBR 5671</button>
-                <button data-target="patologias" class="nav-btn px-2 py-2 rounded-md text-xs sm:text-sm font-medium">Patologias</button>
-                <button data-target="prazos" class="nav-btn px-2 py-2 rounded-md text-xs sm:text-sm font-medium">Prazos</button>
-                <button data-target="responsabilidade" class="nav-btn px-2 py-2 rounded-md text-xs sm:text-sm font-medium">Análise</button>
-                <button data-target="etica" class="nav-btn px-2 py-2 rounded-md text-xs sm:text-sm font-medium">Ética</button>
-                <button data-target="conclusao" class="nav-btn px-2 py-2 rounded-md text-xs sm:text-sm font-medium">Conclusão</button>
+
+<!-- Progress bar -->
+<div id="progress-bar"></div>
+
+<!-- ═══════════════ HEADER ═══════════════ -->
+<header>
+    <div class="container mx-auto px-4 sm:px-6">
+        <div class="flex items-center justify-between py-4 gap-4">
+            <h1 class="site-title flex-shrink-0">
+                Responsabilidade<br class="sm:hidden">
+                <span class="title-accent"> na Construção Civil</span>
+            </h1>
+            <!-- hamburger -->
+            <button id="menu-toggle" aria-label="Menu" class="ml-auto">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+        <!-- Nav -->
+        <div id="nav-wrapper">
+            <nav id="navbar" aria-label="Navegação principal">
+                <button data-target="ecossistema"        class="nav-btn active">Ecossistema</button>
+                <button data-target="agentes"            class="nav-btn">Agentes</button>
+                <button data-target="quadro-responsabilidades" class="nav-btn">Quadro de Resp.</button>
+                <button data-target="gerenciador-fiscal" class="nav-btn">Gerenciador / Fiscal</button>
+                <button data-target="norma-nbr5671"      class="nav-btn">NBR 5671</button>
+                <button data-target="patologias"         class="nav-btn">Patologias</button>
+                <button data-target="prazos"             class="nav-btn">Prazos</button>
+                <button data-target="responsabilidade"   class="nav-btn">Análise</button>
+                <button data-target="etica"              class="nav-btn">Ética</button>
+                <button data-target="conclusao"          class="nav-btn">Conclusão</button>
             </nav>
         </div>
-    </header>
+    </div>
+</header>
 
-    <main class="container mx-auto p-4 md:p-8">
-        
-        <section id="ecossistema" class="py-12">
-            <h2 class="text-3xl font-bold text-center mb-2">O Ecossistema da Construção</h2>
-            <p class="text-center text-lg text-gray-600 mb-8">O processo construtivo é complexo e envolve múltiplos agentes. As falhas podem originar-se em qualquer etapa. Clique em um agente para ver seus detalhes.</p>
-            <div class="relative w-full max-w-4xl mx-auto p-4" aria-label="Diagrama do ciclo de produção e uso da edificação">
-                 <div class="absolute inset-0 flex items-center justify-center">
-                    <div class="w-48 h-48 md:w-64 md:h-64 bg-white border-4 border-[#A0522D] rounded-full flex items-center justify-center">
-                        <span class="text-4xl" role="img" aria-label="Casa">🏠</span>
-                    </div>
-                </div>
-                <div class="relative w-full h-[450px] md:h-[400px]">
-                    <div data-agent="agente-usuario" class="diagram-node absolute top-0 left-1/2 -translate-x-1/2 p-2 bg-white rounded-lg shadow-lg border border-gray-200 text-center"><strong>Usuário</strong><br>(Uso)</div>
-                    <div data-agent="agente-planejamento" class="diagram-node absolute top-1/2 -translate-y-1/2 right-0 md:right-10 p-2 bg-white rounded-lg shadow-lg border border-gray-200 text-center"><strong>Planejamento</strong><br>(Promotor)</div>
-                    <div data-agent="agente-construtor" class="diagram-node absolute top-1/2 -translate-y-1/2 left-0 md:left-10 p-2 bg-white rounded-lg shadow-lg border border-gray-200 text-center"><strong>Execução</strong><br>(Construtor)</div>
-                    <div data-agent="agente-projeto" class="diagram-node absolute bottom-10 md:bottom-20 right-10 md:right-32 p-2 bg-white rounded-lg shadow-lg border border-gray-200 text-center"><strong>Projetista</strong><br>(Projeto)</div>
-                    <div data-agent="agente-fabricante" class="diagram-node absolute bottom-0 left-1/2 -translate-x-1/2 p-2 bg-white rounded-lg shadow-lg border border-gray-200 text-center"><strong>Fabricante</strong><br>(Materiais)</div>
+<!-- ═══════════════ MAIN ═══════════════ -->
+<main class="container mx-auto px-4 sm:px-6 md:px-8">
+
+    <!-- ── ECOSSISTEMA ── -->
+    <section id="ecossistema" class="py-20 fade-in">
+        <h2 class="text-center">O Ecossistema da Construção</h2>
+        <div class="section-rule"></div>
+        <p class="subtitle text-center">O processo construtivo é complexo e envolve múltiplos agentes. As falhas podem originar-se em qualquer etapa. Clique em um agente para ver seus detalhes.</p>
+
+        <div class="relative w-full max-w-4xl mx-auto p-4" aria-label="Diagrama do ciclo">
+            <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div class="w-40 h-40 md:w-56 md:h-56 rounded-full flex items-center justify-center"
+                     style="background:var(--bg-white); border: 3px solid var(--copper); box-shadow: var(--shadow-lg);">
+                    <span class="text-5xl" role="img" aria-label="Edifício">🏛️</span>
                 </div>
             </div>
-        </section>
-        
-        <section id="agentes" class="py-12 bg-white rounded-2xl shadow-lg">
-             <h2 class="text-3xl font-bold text-center mb-2">Papel dos Agentes</h2>
-             <p class="text-center text-lg text-gray-600 mb-8">Cada agente possui um papel e um nível de responsabilidade distintos no ciclo da construção. Explore para entender as atribuições de cada um.</p>
-             <div class="w-full max-w-5xl mx-auto px-4">
-                 <div class="border-b border-gray-200 mb-6">
-                     <nav id="tab-buttons" class="-mb-px flex flex-wrap justify-center space-x-2 md:space-x-8" aria-label="Tabs">
-                     </nav>
-                 </div>
-                 <div id="tab-contents">
-                 </div>
-             </div>
-        </section>
-
-        <section id="quadro-responsabilidades" class="py-12">
-            <h2 class="text-3xl font-bold text-center mb-2">Quadro Geral de Responsabilidades</h2>
-            <p class="text-center text-lg text-gray-600 mb-8">As obrigações na construção civil são bem definidas, abrangendo desde a conduta profissional até a segurança da obra e os impactos na vizinhança.</p>
-            <div class="max-w-5xl mx-auto space-y-8">
-                <div>
-                    <h3 class="text-2xl font-semibold mb-4 text-center text-[#A0522D]">Responsabilidades do Construtor</h3>
-                    <div class="grid md:grid-cols-2 gap-6">
-                        <div class="resp-card p-6 rounded-lg shadow-md">
-                            <h4 class="font-bold text-lg mb-2">Ético-Profissional</h4>
-                            <p class="text-sm text-gray-700">Dever de atuar dentro da melhor técnica, em conformidade com o Código de Ética Profissional (Res. 1.002/2002 do CONFEA), sob pena de advertência ou sanções disciplinares.</p>
-                        </div>
-                        <div class="resp-card p-6 rounded-lg shadow-md">
-                            <h4 class="font-bold text-lg mb-2">Pela Perfeição da Obra</h4>
-                            <p class="text-sm text-gray-700">O construtor é responsável pela perfeição da obra. O dono da obra pode enjeitá-la se defeituosa ou recebê-la com abatimento do preço (CC, arts. 615 e 616).</p>
-                        </div>
-                        <div class="resp-card p-6 rounded-lg shadow-md">
-                            <h4 class="font-bold text-lg mb-2">Legal ou Contratual (Vícios e Imperfeições)</h4>
-                            <p class="text-sm text-gray-700">Responsável pelos vícios e imperfeições de materiais ou de execução, mesmo que oriundos de culpa sua ou de seus prepostos (CC, arts. 389, 186, 615, 927; CDC, arts. 18 e 20).</p>
-                        </div>
-                        <div class="resp-card p-6 rounded-lg shadow-md">
-                            <h4 class="font-bold text-lg mb-2">Pela Solidez e Segurança</h4>
-                            <p class="text-sm text-gray-700">Responsabilidade legal pela solidez e segurança do trabalho, especialmente em edifícios e outras construções de grande porte (CC, art. 618).</p>
-                        </div>
-                        <div class="resp-card p-6 rounded-lg shadow-md md:col-span-2">
-                            <h4 class="font-bold text-lg mb-2">Por Danos a Vizinhos</h4>
-                            <p class="text-sm text-gray-700">Responsável pela reparação de lesões patrimoniais causadas a vizinhos. O dono da obra também responde, com direito de regresso contra o construtor. A responsabilidade é objetiva neste caso (CC, art. 937, 1.299).</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div>
-                    <h3 class="text-2xl font-semibold mb-4 text-center text-[#A0522D]">Responsabilidades de Outros Partícipes</h3>
-                     <div class="grid md:grid-cols-2 gap-6">
-                         <div class="resp-card p-6 rounded-lg shadow-md">
-                            <h4 class="font-bold text-lg mb-2">Fornecedor de Componente ou Peça</h4>
-                            <p class="text-sm text-gray-700">Se o dano for causado por componente defeituoso, seus fabricantes, construtores e importadores são solidariamente responsáveis (CDC, art. 25, §1º; CC, art. 942).</p>
-                        </div>
-                        <div class="resp-card p-6 rounded-lg shadow-md">
-                            <h4 class="font-bold text-lg mb-2">Profissionais Liberais (Projetistas etc.)</h4>
-                            <p class="text-sm text-gray-700">A responsabilidade é subjetiva, ou seja, depende da apuração de culpa. O construtor responde perante o dono da obra, mas tem direito de regresso contra quem elaborou o projeto com erros (CDC, art. 14, §4º).</p>
-                        </div>
-                     </div>
-                </div>
+            <div class="relative w-full h-[430px] md:h-[390px]">
+                <div data-agent="agente-usuario"     class="diagram-node absolute top-0 left-1/2 -translate-x-1/2"><strong>Usuário</strong>Uso / Manutenção</div>
+                <div data-agent="agente-planejamento" class="diagram-node absolute top-1/2 -translate-y-1/2 right-0 md:right-8"><strong>Planejamento</strong>Promotor / Incorporador</div>
+                <div data-agent="agente-construtor"  class="diagram-node absolute top-1/2 -translate-y-1/2 left-0 md:left-8"><strong>Execução</strong>Construtor</div>
+                <div data-agent="agente-projeto"     class="diagram-node absolute bottom-10 md:bottom-20 right-10 md:right-28"><strong>Projetista</strong>Projeto Técnico</div>
+                <div data-agent="agente-fabricante"  class="diagram-node absolute bottom-0 left-1/2 -translate-x-1/2"><strong>Fabricante</strong>Materiais e Componentes</div>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <section id="gerenciador-fiscal" class="py-12 bg-white rounded-2xl shadow-lg">
-            <h2 class="text-3xl font-bold text-center mb-2">Foco no Gerenciador e Fiscal</h2>
-            <p class="text-center text-lg text-gray-600 mb-8">Estes profissionais atuam como os "olhos técnicos" do dono da obra, sendo essenciais para assegurar a qualidade e a conformidade da execução.</p>
+    <!-- ── AGENTES ── -->
+    <section id="agentes" class="section-white py-16 fade-in">
+        <h2 class="text-center">Papel dos Agentes</h2>
+        <div class="section-rule"></div>
+        <p class="subtitle text-center">Cada agente possui papel e nível de responsabilidade distintos no ciclo da construção.</p>
+        <div class="w-full max-w-5xl mx-auto px-4">
+            <div class="border-b mb-6" style="border-color: var(--border);">
+                <nav id="tab-buttons" class="-mb-px flex flex-wrap gap-1" aria-label="Tabs agentes"></nav>
+            </div>
+            <div id="tab-contents"></div>
+        </div>
+    </section>
 
-            <div class="max-w-5xl mx-auto grid md:grid-cols-2 gap-8 px-4">
-                <div>
-                    <h3 class="font-semibold text-xl text-[#A0522D] border-b-2 border-[#A0522D] pb-2 mb-4">Gerenciamento</h3>
-                    <p class="text-sm text-gray-600 mb-4">Atividade técnica de mediação entre o dono da obra e os executores, visando a realização da obra em sua expressão global.</p>
-                    <h4 class="font-bold mb-2">Principais Atividades:</h4>
-                    <ul class="list-disc list-inside space-y-1 text-sm text-gray-700">
-                        <li><strong>Programação:</strong> Planejamento da progressão da obra.</li>
-                        <li><strong>Supervisão:</strong> Orientação e coordenação dos trabalhos.</li>
-                        <li><strong>Controle:</strong> Poder de correção dos serviços.</li>
-                        <li><strong>Fiscalização:</strong> Vigilância permanente da execução.</li>
-                        <li><strong>Consultoria:</strong> Assessoria técnica especializada.</li>
-                    </ul>
-                </div>
-                <div>
-                    <h3 class="font-semibold text-xl text-[#A0522D] border-b-2 border-[#A0522D] pb-2 mb-4">Fiscalização</h3>
-                    <p class="text-sm text-gray-600 mb-4">Atividade focada na inspeção e controle técnico sistemático para garantir a aderência ao projeto e às normas.</p>
-                    <h4 class="font-bold mb-2">Objetivo Principal:</h4>
-                     <ul class="list-disc list-inside space-y-1 text-sm text-gray-700">
-                        <li>Verificar se a execução obedece ao projeto.</li>
-                        <li>Assegurar a conformidade com especificações e prazos.</li>
-                        <li>Garantir a boa técnica e a qualidade da execução.</li>
-                        <li>Impor ao construtor a fiel observância do contrato.</li>
-                    </ul>
-                </div>
-            </div>
+    <!-- ── QUADRO DE RESPONSABILIDADES ── -->
+    <section id="quadro-responsabilidades" class="py-20 fade-in">
+        <h2 class="text-center">Quadro Geral de Responsabilidades</h2>
+        <div class="section-rule"></div>
+        <p class="subtitle text-center">As obrigações na construção civil abrangem desde a conduta profissional até a segurança da obra e os impactos na vizinhança.</p>
 
-            <div class="max-w-5xl mx-auto mt-10 px-4">
-                 <div class="bg-stone-50 p-6 rounded-lg border border-stone-200">
-                     <h3 class="font-bold text-xl text-center mb-4">Natureza da Responsabilidade do Gerenciador/Fiscal</h3>
-                    <p class="text-center text-gray-700">A responsabilidade destes profissionais possui características distintas e cruciais:</p>
-                    <div class="mt-4 grid sm:grid-cols-2 gap-4 text-center">
-                        <div class="bg-white p-4 rounded-lg shadow-sm">
-                            <h4 class="font-semibold text-lg">Responsabilidade Subjetiva</h4>
-                            <p class="text-sm text-gray-600">Diferente do construtor (que tem responsabilidade objetiva pela segurança), a responsabilidade do gerenciador/fiscal depende da comprovação de **culpa** (negligência, imprudência ou imperícia) no exercício de suas funções.</p>
-                        </div>
-                        <div class="bg-white p-4 rounded-lg shadow-sm">
-                            <h4 class="font-semibold text-lg">Responsabilidade Solidária</h4>
-                            <p class="text-sm text-gray-600">Apesar de subjetiva, a jurisprudência recente tem entendido que, perante terceiros prejudicados, o gerenciador e o fiscal podem responder **solidariamente** com o construtor, pois estão tecnicamente vinculados à qualidade e fiel execução da obra.</p>
-                        </div>
-                    </div>
-                 </div>
-            </div>
-        </section>
+        <div class="max-w-5xl mx-auto space-y-12">
 
-        <section id="norma-nbr5671" class="py-12">
-            <h2 class="text-3xl font-bold text-center mb-2">Norma ABNT NBR 5671</h2>
-            <p class="text-center text-lg text-gray-600 mb-8">Esta norma fixa as condições de participação dos intervenientes em obras, definindo suas responsabilidades para garantir a qualidade do empreendimento.</p>
-             <div class="max-w-6xl mx-auto grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div class="card p-6 bg-white rounded-lg shadow">
-                    <h3 class="font-bold text-lg mb-3">Proprietário</h3>
-                    <ul class="text-sm text-gray-700 list-disc list-inside space-y-2">
-                        <li>Dispor dos recursos para a obra.</li>
-                        <li>Definir com clareza os objetivos do projeto.</li>
-                        <li>Receber o empreendimento após vistoria.</li>
-                        <li>Usar adequadamente o bem conforme o manual.</li>
-                    </ul>
-                </div>
-                <div class="card p-6 bg-white rounded-lg shadow">
-                    <h3 class="font-bold text-lg mb-3">Autor do Projeto</h3>
-                    <ul class="text-sm text-gray-700 list-disc list-inside space-y-2">
-                        <li>Elaborar o projeto coordenado e completo.</li>
-                        <li>Respeitar as normas técnicas e regulamentos.</li>
-                        <li>Assumir ônus por erros de projeto comprovados.</li>
-                        <li>Direito de ser consultado sobre modificações.</li>
-                    </ul>
-                </div>
-                <div class="card p-6 bg-white rounded-lg shadow">
-                    <h3 class="font-bold text-lg mb-3">Executante (Construtor)</h3>
-                    <ul class="text-sm text-gray-700 list-disc list-inside space-y-2">
-                        <li>Examinar projetos e executar a obra conforme especificado.</li>
-                        <li>Manter o projeto e o livro de ocorrências na obra.</li>
-                        <li>Refazer serviços em desacordo sem ônus.</li>
-                        <li>Fornecer o "Manual de Uso e Manutenção".</li>
-                    </ul>
-                </div>
-                <div class="card p-6 bg-white rounded-lg shadow">
-                    <h3 class="font-bold text-lg mb-3">Fiscal</h3>
-                    <ul class="text-sm text-gray-700 list-disc list-inside space-y-2">
-                        <li>Verificar o cumprimento das disposições contratuais.</li>
-                        <li>Recusar serviços e materiais em desacordo.</li>
-                        <li>Alertar sobre o cumprimento de normas de segurança.</li>
-                        <li>Responder por prejuízos decorrentes de sua atuação.</li>
-                    </ul>
-                </div>
-            </div>
-            <div class="max-w-6xl mx-auto mt-8 grid md:grid-cols-2 gap-6">
-                 <div class="bg-amber-50 border-l-4 border-amber-400 p-6 rounded-r-lg">
-                    <h3 class="font-bold text-xl mb-2 text-amber-800">📝 Registro de Ocorrências</h3>
-                    <p class="text-amber-700">A norma estabelece a obrigatoriedade de um livro para registro de fatos relevantes durante a execução da obra. É uma ferramenta crucial para a documentação e delimitação de responsabilidades.</p>
-                </div>
-                <div class="bg-sky-50 border-l-4 border-sky-400 p-6 rounded-r-lg">
-                    <h3 class="font-bold text-xl mb-2 text-sky-800">📖 Manual de Uso e Manutenção</h3>
-                    <p class="text-sky-700">O executante deve fornecer ao proprietário um manual com instruções para a correta utilização, conservação e manutenção do imóvel. O mau uso por desobediência ao manual exime o construtor de responsabilidades.</p>
-                </div>
-            </div>
-        </section>
-
-        <section id="patologias" class="py-12 bg-white rounded-2xl shadow-lg">
-            <h2 class="text-3xl font-bold text-center mb-2">Patologias: Vícios e Defeitos na Construção</h2>
-            <p class="text-center text-lg text-gray-600 mb-8">As falhas construtivas, ou patologias, são a manifestação de problemas que podem ocorrer em diversas fases da obra. Entender suas classificações é vital.</p>
-            
-            <div class="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto mb-12">
-                <div class="card p-6 rounded-xl border border-yellow-300 shadow-md">
-                    <h3 class="text-2xl font-bold mb-3 text-yellow-700 flex items-center gap-2"><span class="text-2xl">⚠️</span> Vício Construtivo</h3>
-                    <p class="text-gray-600">É uma anomalia que afeta a **qualidade** ou o **desempenho** de um produto ou serviço, tornando-o inadequado ao uso a que se destina ou diminuindo seu valor. O foco está na inadequação.</p>
-                </div>
-                <div class="card p-6 rounded-xl border border-red-400 shadow-md">
-                    <h3 class="text-2xl font-bold mb-3 text-red-700 flex items-center gap-2"><span class="text-2xl">⚡</span> Defeito</h3>
-                    <p class="text-gray-600">É um vício que vai além da simples inadequação, colocando em risco a **segurança** do consumidor. O foco está no perigo que ele representa.</p>
-                </div>
-            </div>
-
-            <div class="max-w-5xl mx-auto mb-12">
-                <h3 class="text-2xl font-bold text-center mb-6">Classificação Detalhada dos Vícios</h3>
-                <div class="bg-white p-6 rounded-xl shadow-lg">
-                    <div id="vicios-tabs" class="flex flex-wrap justify-center gap-2 mb-4 border-b pb-2"></div>
-                    <div id="vicios-content" class="p-4 bg-gray-50 rounded-lg min-h-[150px]"></div>
-                </div>
-            </div>
-
-            <div class="max-w-5xl mx-auto mb-12">
-                <h3 class="text-2xl font-bold text-center mb-6">Tipologia dos Defeitos (Origem)</h3>
-                <div class="grid sm:grid-cols-3 gap-6">
-                    <div class="card p-4 bg-stone-50 rounded-lg text-center">
-                        <h4 class="font-bold text-lg mb-2">Concepção (Projeto)</h4>
-                        <p class="text-sm text-gray-600">Erros no projeto, na formulação, no design ou na escolha de materiais inadequados.</p>
-                    </div>
-                    <div class="card p-4 bg-stone-50 rounded-lg text-center">
-                        <h4 class="font-bold text-lg mb-2">Produção (Execução)</h4>
-                        <p class="text-sm text-gray-600">Falhas durante a fabricação, construção, montagem ou manipulação dos materiais na obra.</p>
-                    </div>
-                    <div class="card p-4 bg-stone-50 rounded-lg text-center">
-                        <h4 class="font-bold text-lg mb-2">Informação</h4>
-                        <p class="text-sm text-gray-600">Instruções insuficientes ou inadequadas sobre a utilização e os riscos do produto ou serviço.</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto items-center mb-12">
-                <div>
-                    <h3 class="text-2xl font-bold text-center mb-4">Origem das Falhas (Estatística)</h3>
-                    <p class="text-center text-gray-600 mb-6">A maioria dos problemas se origina nas fases de projeto e execução, destacando a importância da qualificação técnica e da supervisão rigorosa.</p>
-                </div>
-                <div class="chart-container h-64 md:h-80">
-                    <canvas id="originChart"></canvas>
-                </div>
-            </div>
-            
             <div>
-                <h3 class="text-2xl font-bold text-center mt-12 mb-4">Foco em Fissuras: Causas Comuns</h3>
-                <p class="text-center text-lg text-gray-600 mb-8">Fissuras são uma das patologias mais comuns. Explore os diferentes tipos e suas causas para entender como podem ser prevenidas.</p>
-                <div class="max-w-5xl mx-auto bg-white p-6 rounded-xl shadow-lg">
-                    <div id="fissuras-tabs" class="flex flex-wrap justify-center gap-2 mb-4 border-b pb-2"></div>
-                    <div id="fissuras-content" class="p-4 bg-gray-50 rounded-lg min-h-[150px]"></div>
+                <div class="flex items-center gap-3 mb-6">
+                    <span class="label-copper">Construtor</span>
+                    <h3 class="text-xl">Responsabilidades do Construtor</h3>
                 </div>
-            </div>
-        </section>
-
-        <section id="prazos" class="py-12">
-            <h2 class="text-3xl font-bold text-center mb-2">Prazos e Garantias</h2>
-            <p class="text-center text-lg text-gray-600 mb-8">A legislação estabelece prazos claros para reclamações e garantias na construção civil. Conhecê-los é essencial para proteger direitos.</p>
-            <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-                <div class="card p-6 bg-stone-50 rounded-lg text-center">
-                    <div class="text-4xl mb-2">🗓️</div>
-                    <h3 class="font-bold text-xl mb-2">90 Dias - Vícios Aparentes</h3>
-                    <p class="text-sm text-gray-600">Prazo para reclamar de vícios de fácil constatação (ex: pintura manchada, janela que não fecha). Conta-se a partir da entrega do imóvel (CDC, Art. 26).</p>
-                </div>
-                <div class="card p-6 bg-stone-50 rounded-lg text-center">
-                    <div class="text-4xl mb-2">🛡️</div>
-                    <h3 class="font-bold text-xl mb-2">5 Anos - Solidez e Segurança</h3>
-                    <p class="text-sm text-gray-600">Prazo de garantia legal para a solidez e segurança da obra. O construtor responde por defeitos estruturais que surgirem neste período (Código Civil, Art. 618).</p>
-                </div>
-                 <div class="card p-6 bg-stone-50 rounded-lg text-center">
-                    <div class="text-4xl mb-2">⚖️</div>
-                    <h3 class="font-bold text-xl mb-2">10 Anos - Prazo Prescricional</h3>
-                    <p class="text-sm text-gray-600">Se um defeito de solidez aparecer dentro da garantia de 5 anos, o proprietário tem até 10 anos (Súmula 194, STJ) a partir do surgimento do defeito para entrar com ação judicial.</p>
-                </div>
-            </div>
-        </section>
-
-        <section id="responsabilidade" class="py-12 bg-white rounded-2xl shadow-lg">
-             <h2 class="text-3xl font-bold text-center mb-2">Análise Visual das Responsabilidades</h2>
-             <p class="text-center text-lg text-gray-600 mb-8">A responsabilidade pode ser objetiva (independe de culpa) ou subjetiva (baseada na comprovação de culpa). Veja no gráfico como cada agente se posiciona.</p>
-             
-             <div class="p-8">
-                 <div class="w-full max-w-4xl mx-auto">
-                    <div class="chart-container">
-                        <canvas id="responsibilityChart"></canvas>
+                <div class="grid md:grid-cols-2 gap-5">
+                    <div class="resp-card p-6">
+                        <h4 class="font-bold text-base mb-2" style="color:var(--navy-deep)">Ético-Profissional</h4>
+                        <p class="text-sm" style="color:var(--text-muted)">Dever de atuar dentro da melhor técnica, em conformidade com o Código de Ética Profissional (Res. 1.002/2002 do CONFEA), sob pena de advertência ou sanções disciplinares.</p>
                     </div>
-                     <div class="text-center mt-4">
-                         <p class="text-sm text-gray-500">O gráfico compara a natureza da responsabilidade de cada agente em cinco eixos: Direta, Indireta, Subjetiva (com culpa), Objetiva (sem culpa) e Solidária.</p>
-                     </div>
-                 </div>
-             </div>
-
-            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto mb-12 text-center p-8">
-                <div class="bg-gray-50 p-4 rounded-lg shadow">
-                    <h3 class="font-semibold text-lg">Responsabilidade Legal</h3>
-                    <p class="text-sm text-gray-600">Imposta por lei, de ordem pública. Irrenunciável pelas partes.</p>
-                </div>
-                <div class="bg-gray-50 p-4 rounded-lg shadow">
-                    <h3 class="font-semibold text-lg">Responsabilidade Contratual</h3>
-                    <p class="text-sm text-gray-600">Surge do acordo entre as partes, limitada ao que foi convencionado.</p>
-                </div>
-                <div class="bg-gray-50 p-4 rounded-lg shadow lg:col-span-1">
-                    <h3 class="font-semibold text-lg">Responsabilidade Extracontratual</h3>
-                    <p class="text-sm text-gray-600">Origina-se de um ato ilícito que causa dano a outrem.</p>
+                    <div class="resp-card p-6">
+                        <h4 class="font-bold text-base mb-2" style="color:var(--navy-deep)">Pela Perfeição da Obra</h4>
+                        <p class="text-sm" style="color:var(--text-muted)">O construtor é responsável pela perfeição da obra. O dono pode enjeitá-la se defeituosa ou recebê-la com abatimento do preço (CC, arts. 615 e 616).</p>
+                    </div>
+                    <div class="resp-card p-6">
+                        <h4 class="font-bold text-base mb-2" style="color:var(--navy-deep)">Legal ou Contratual (Vícios e Imperfeições)</h4>
+                        <p class="text-sm" style="color:var(--text-muted)">Responsável pelos vícios e imperfeições de materiais ou de execução, mesmo que oriundos de culpa sua ou de seus prepostos (CC, arts. 389, 186, 615, 927; CDC, arts. 18 e 20).</p>
+                    </div>
+                    <div class="resp-card p-6">
+                        <h4 class="font-bold text-base mb-2" style="color:var(--navy-deep)">Pela Solidez e Segurança</h4>
+                        <p class="text-sm" style="color:var(--text-muted)">Responsabilidade legal pela solidez e segurança do trabalho, especialmente em edifícios e outras construções de grande porte (CC, art. 618).</p>
+                    </div>
+                    <div class="resp-card p-6 md:col-span-2">
+                        <h4 class="font-bold text-base mb-2" style="color:var(--navy-deep)">Por Danos a Vizinhos</h4>
+                        <p class="text-sm" style="color:var(--text-muted)">Responsável pela reparação de lesões patrimoniais causadas a vizinhos. O dono da obra também responde, com direito de regresso contra o construtor. A responsabilidade é objetiva neste caso (CC, art. 937, 1.299).</p>
+                    </div>
                 </div>
             </div>
 
-             <div class="max-w-4xl mx-auto px-8 pb-8">
-                <div class="bg-amber-50 border-l-4 border-amber-400 p-6 rounded-r-lg">
-                    <h3 class="font-bold text-xl mb-2 text-amber-800">Medida Preventiva Essencial: Vistoria Cautelar</h3>
-                    <p class="text-amber-700">Antes de iniciar uma obra, é altamente recomendável realizar uma vistoria técnica detalhada ("Vistoria Cautelar") nos imóveis vizinhos. Este laudo documenta as condições preexistentes, protegendo o construtor de ser responsabilizado por danos antigos e garantindo aos vizinhos a integridade de seu patrimônio.</p>
+            <div>
+                <div class="flex items-center gap-3 mb-6">
+                    <span class="label-navy">Outros Partícipes</span>
+                    <h3 class="text-xl">Responsabilidades de Outros Agentes</h3>
+                </div>
+                <div class="grid md:grid-cols-2 gap-5">
+                    <div class="card-navy p-6">
+                        <h4 class="font-bold text-base mb-2" style="color:var(--navy-deep)">Fornecedor de Componente ou Peça</h4>
+                        <p class="text-sm" style="color:var(--text-muted)">Se o dano for causado por componente defeituoso, seus fabricantes, construtores e importadores são solidariamente responsáveis (CDC, art. 25, §1º; CC, art. 942).</p>
+                    </div>
+                    <div class="card-navy p-6">
+                        <h4 class="font-bold text-base mb-2" style="color:var(--navy-deep)">Profissionais Liberais (Projetistas)</h4>
+                        <p class="text-sm" style="color:var(--text-muted)">A responsabilidade é subjetiva, dependendo da apuração de culpa. O construtor responde perante o dono da obra, mas tem direito de regresso contra quem elaborou o projeto com erros (CDC, art. 14, §4º).</p>
+                    </div>
                 </div>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <section id="etica" class="py-12">
-            <h2 class="text-3xl font-bold text-center mb-2">Código de Ética Profissional</h2>
-            <p class="text-center text-lg text-gray-600 mb-8">A prática profissional é guiada por princípios éticos que asseguram a honra, a responsabilidade e o compromisso com o bem-estar social e ambiental.</p>
-            <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-                <div class="card p-6 bg-white rounded-lg shadow">
-                    <div class="text-3xl mb-3">🌱</div>
-                    <h3 class="font-bold text-xl mb-2">Princípios Fundamentais</h3>
-                    <p class="text-sm text-gray-600">A profissão é um bem social, e sua prática deve visar a preservação e o desenvolvimento harmônico do ser humano, seu ambiente e seus valores, pautada na honestidade e competência.</p>
-                </div>
-                <div class="card p-6 bg-white rounded-lg shadow">
-                    <div class="text-3xl mb-3">🤝</div>
-                    <h3 class="font-bold text-xl mb-2">Deveres do Profissional</h3>
-                    <ul class="text-sm text-gray-600 list-disc list-inside space-y-1">
-                        <li>Oferecer o saber para o bem da humanidade.</li>
-                        <li>Atuar com lealdade e equidade.</li>
-                        <li>Resguardar o sigilo profissional.</li>
-                        <li>Orientar pelos preceitos do desenvolvimento sustentável.</li>
-                    </ul>
-                </div>
-                 <div class="card p-6 bg-white rounded-lg shadow">
-                    <div class="text-3xl mb-3">🚫</div>
-                    <h3 class="font-bold text-xl mb-2">Condutas Vedadas</h3>
-                     <ul class="text-sm text-gray-600 list-disc list-inside space-y-1">
-                        <li>Usar de privilégio para fins discriminatórios.</li>
-                        <li>Aceitar trabalho para o qual não tenha qualificação.</li>
-                        <li>Formular propostas de honorários vis ou extorsivos.</li>
-                        <li>Intervir em trabalho de outro profissional sem autorização.</li>
-                    </ul>
-                </div>
-            </div>
-        </section>
-        
-        <section id="conclusao" class="py-12 bg-white rounded-2xl shadow-lg">
-            <h2 class="text-3xl font-bold text-center mb-2">Conclusão: Matriz de Responsabilidade</h2>
-            <p class="text-center text-lg text-gray-600 mb-8">Esta matriz resume o papel principal e a natureza da responsabilidade de cada agente-chave, destacando a importância da diligência.</p>
-            <div class="max-w-4xl mx-auto overflow-x-auto p-8">
-                <table class="w-full text-left border-collapse">
-                    <thead class="bg-stone-100">
-                        <tr>
-                            <th class="p-4 font-bold uppercase text-stone-600 border-b border-stone-200">Agente</th>
-                            <th class="p-4 font-bold uppercase text-stone-600 border-b border-stone-200">Papel Principal</th>
-                            <th class="p-4 font-bold uppercase text-stone-600 border-b border-stone-200">Natureza da Responsabilidade</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="hover:bg-stone-50">
-                            <td class="p-4 border-b border-stone-200 font-semibold text-[#A0522D]">Dono da Obra / Incorporador</td>
-                            <td class="p-4 border-b border-stone-200">Idealizador, viabilizador do empreendimento.</td>
-                            <td class="p-4 border-b border-stone-200">Primária e, em geral, solidária.</td>
-                        </tr>
-                        <tr class="hover:bg-stone-50">
-                            <td class="p-4 border-b border-stone-200 font-semibold text-[#A0522D]">Construtor</td>
-                            <td class="p-4 border-b border-stone-200">Executor material da obra.</td>
-                            <td class="p-4 border-b border-stone-200">Direta. Objetiva (pela segurança) e contratual.</td>
-                        </tr>
-                        <tr class="hover:bg-stone-50">
-                            <td class="p-4 border-b border-stone-200 font-semibold text-[#A0522D]">Fiscal / Gerenciador</td>
-                            <td class="p-4 border-b border-stone-200">"Olhos técnicos" do dono da obra. Assegura a qualidade da execução.</td>
-                            <td class="p-4 border-b border-stone-200">Indireta. Subjetiva (baseada na culpa por omissão).</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
+    <!-- ── GERENCIADOR/FISCAL ── -->
+    <section id="gerenciador-fiscal" class="section-white py-16 fade-in">
+        <h2 class="text-center">Foco no Gerenciador e Fiscal</h2>
+        <div class="section-rule"></div>
+        <p class="subtitle text-center">Estes profissionais atuam como os "olhos técnicos" do dono da obra, sendo essenciais para assegurar a qualidade e a conformidade da execução.</p>
 
-        <section id="referencias" class="py-12">
-            <h2 class="text-3xl font-bold text-center mb-4">Referências</h2>
-            <div class="max-w-3xl mx-auto bg-white p-6 rounded-lg shadow-lg">
-                <ul class="list-disc list-inside space-y-2 text-gray-700">
-                    <li>ASSOCIAÇÃO BRASILEIRA DE NORMAS TÉCNICAS. **NBR 5671**: Participação dos intervenientes em serviços e obras de engenharia e arquitetura. Rio de Janeiro, 1990.</li>
-                    <li>DEL MAR, Carlos Pinto. **A responsabilidade do dono da obra pela construção e nas incorporações imobiliárias.**</li>
-                    <li>DEL MAR, Carlos Pinto. **Gerenciamento e fiscalização.**</li>
-                    <li>DEL MAR, Carlos Pinto. **Vícios e Defeitos no Código Civil e no Código de Defesa do Consumidor.**</li>
-                    <li>PELACANI, Valmir Luiz. **Responsabilidade na Construção Civil.** Cadernos do CREA-PR, n. 7. Curitiba, 2010.</li>
-                    <li>CONSELHO REGIONAL DE ENGENHARIA E AGRONOMIA DE SÃO PAULO (CREA-SP). **Código de Ética Profissional.** Resolução CONFEA n.º 1.002/02.</li>
-                    <li>Documento sobre a **Origem das Falhas** no processo de produção e uso das edificações.</li>
-                    <li>Imagens de quadro geral de responsabilidades do construtor e de outros partícipes.</li>
+        <div class="max-w-5xl mx-auto grid md:grid-cols-2 gap-8 px-4">
+            <div>
+                <h3 class="text-lg font-bold mb-1" style="color:var(--copper)">Gerenciamento</h3>
+                <div style="height:3px; width:40px; background:var(--copper); border-radius:2px; margin-bottom:1rem;"></div>
+                <p class="text-sm mb-4" style="color:var(--text-muted)">Atividade técnica de mediação entre o dono da obra e os executores, visando a realização da obra em sua expressão global.</p>
+                <h4 class="font-bold text-sm mb-2" style="color:var(--navy-deep)">Principais Atividades</h4>
+                <ul class="styled">
+                    <li><strong>Programação:</strong> Planejamento da progressão da obra.</li>
+                    <li><strong>Supervisão:</strong> Orientação e coordenação dos trabalhos.</li>
+                    <li><strong>Controle:</strong> Poder de correção dos serviços.</li>
+                    <li><strong>Fiscalização:</strong> Vigilância permanente da execução.</li>
+                    <li><strong>Consultoria:</strong> Assessoria técnica especializada.</li>
                 </ul>
             </div>
-        </section>
-
-    </main>
-
-    <footer class="bg-white mt-12 py-6 border-t">
-        <div class="container mx-auto text-center text-gray-500">
-            <p class="font-semibold">Autoria e edição: Felipe Luz.</p>
-            <p class="text-sm mt-1">&copy; 2024 Análise Interativa de Responsabilidade na Construção Civil. Conteúdo para fins educacionais.</p>
+            <div>
+                <h3 class="text-lg font-bold mb-1" style="color:var(--navy-mid)">Fiscalização</h3>
+                <div style="height:3px; width:40px; background:var(--navy-mid); border-radius:2px; margin-bottom:1rem;"></div>
+                <p class="text-sm mb-4" style="color:var(--text-muted)">Atividade focada na inspeção e controle técnico sistemático para garantir a aderência ao projeto e às normas.</p>
+                <h4 class="font-bold text-sm mb-2" style="color:var(--navy-deep)">Objetivo Principal</h4>
+                <ul class="styled">
+                    <li>Verificar se a execução obedece ao projeto.</li>
+                    <li>Assegurar conformidade com especificações e prazos.</li>
+                    <li>Garantir a boa técnica e a qualidade da execução.</li>
+                    <li>Impor ao construtor a fiel observância do contrato.</li>
+                </ul>
+            </div>
         </div>
-    </footer>
 
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        Chart.register(ChartDataLabels);
+        <div class="max-w-5xl mx-auto mt-10 px-4">
+            <div class="p-6 rounded-xl" style="background:var(--bg-ivory); border:1px solid var(--border);">
+                <h3 class="text-center font-bold text-xl mb-4" style="color:var(--navy-deep)">Natureza da Responsabilidade do Gerenciador / Fiscal</h3>
+                <div class="grid sm:grid-cols-2 gap-5 mt-4">
+                    <div class="card p-5 text-center">
+                        <span class="label-copper">Subjetiva</span>
+                        <h4 class="font-bold text-base mt-1 mb-2" style="color:var(--navy-deep)">Baseada em Culpa</h4>
+                        <p class="text-sm" style="color:var(--text-muted)">Diferente do construtor (responsabilidade objetiva), a do gerenciador/fiscal depende da comprovação de <strong>culpa</strong> — negligência, imprudência ou imperícia.</p>
+                    </div>
+                    <div class="card p-5 text-center">
+                        <span class="label-navy">Solidária</span>
+                        <h4 class="font-bold text-base mt-1 mb-2" style="color:var(--navy-deep)">Perante Terceiros</h4>
+                        <p class="text-sm" style="color:var(--text-muted)">A jurisprudência recente entende que, perante terceiros prejudicados, o gerenciador e o fiscal podem responder <strong>solidariamente</strong> com o construtor.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-        const agentData = {
-            "agente-dono": { id: "agente-dono", title: "Dono da Obra", content: `<h4 class="font-bold text-lg mb-2 text-[#A0522D]">Dono da Obra</h4><ul class="list-disc list-inside space-y-2"><li>É o <strong>primeiro responsável</strong> pelos danos causados pela construção a terceiros.</li><li>É quem determina a execução e geralmente tem o interesse econômico.</li><li>Responde pela escolha de profissionais habilitados (culpa in eligendo).</li><li><strong>Fundamento Legal:</strong> Arts. 186, 927, 932, 933 do Código Civil.</li></ul>` },
-            "agente-incorporador": { id: "agente-incorporador", title: "Incorporador", content: `<h4 class="font-bold text-lg mb-2 text-[#A0522D]">Incorporador</h4><ul class="list-disc list-inside space-y-2"><li>Promove e realiza a construção para alienação.</li><li><strong>Equipara-se ao construtor</strong> para efeitos de responsabilidade pela solidez e segurança.</li><li><strong>Responde solidariamente com o construtor</strong> pelos defeitos da obra.</li></ul>` },
-            "agente-construtor": { id: "agente-construtor", title: "Construtor", content: `<h4 class="font-bold text-lg mb-2 text-[#A0522D]">O Executor: O Construtor</h4><p class="mb-4">Responsável pela execução material e pela perfeição da obra.</p><ul class="list-disc list-inside space-y-2"><li><strong>Obrigação de Resultado:</strong> Garantir a <strong>solidez e segurança</strong> da edificação.</li><li>Responde pela qualidade dos materiais aplicados e pelos serviços executados.</li><li>Responsabilidade pode ser por empreitada de lavor (só trabalho) ou de materiais (trabalho + material).</li></ul>` },
-            "agente-gerenciador": { id: "agente-gerenciador", title: "Gerenciador", content: `<h4 class="font-bold text-lg mb-2 text-[#A0522D]">O Gerenciador da Obra: O Condutor</h4><p class="mb-4">Atua como mediador técnico-administrativo entre o dono da obra e os executores.</p><strong class="font-semibold">Escopo das Atividades:</strong><ul class="list-disc list-inside space-y-2 mt-2"><li>Programação, Supervisão, Controle, Fiscalização e Consultoria.</li><li>Sua responsabilidade é subjetiva (baseada em culpa por omissão) e contratual.</li></ul>` },
-            "agente-fiscal": { id: "agente-fiscal", title: "Fiscal", content: `<h4 class="font-bold text-lg mb-2 text-[#A0522D]">O Fiscal da Obra: Os Olhos Técnicos</h4><p class="mb-4">Focado na inspeção e controle técnico sistemático da obra para garantir conformidade.</p><strong class="font-semibold">Objetivo Principal:</strong><ul class="list-disc list-inside space-y-2 mt-2"><li>Verificar se a execução obedece ao <strong>projeto e às normas</strong>.</li><li>Uma fiscalização omissa pode levar à responsabilização solidária com o construtor.</li></ul>` }
-        };
+    <!-- ── NORMA NBR 5671 ── -->
+    <section id="norma-nbr5671" class="py-20 fade-in">
+        <h2 class="text-center">Norma ABNT NBR 5671</h2>
+        <div class="section-rule"></div>
+        <p class="subtitle text-center">Esta norma fixa as condições de participação dos intervenientes em obras, definindo suas responsabilidades para garantir a qualidade do empreendimento.</p>
 
-        const viciosData = {
-            aparentesOcultos: { title: 'Aparentes e Ocultos', content: '<strong>Vícios Aparentes:</strong> São os de fácil constatação por qualquer pessoa, não exigindo conhecimento técnico. <br><br> <strong>Vícios Ocultos:</strong> Não são constatáveis de imediato e só aparecem com o tempo ou com uma análise técnica. Podem ser <strong>simples</strong> (reparáveis, sem grande impacto) ou <strong>redibitórios</strong> (graves, tornando o imóvel impróprio para o uso ou diminuindo seu valor, como um erro estrutural).'},
-            qualidadeQuantidade: { title: 'Qualidade e Quantidade (CDC)', content: '<strong>Vícios de Qualidade:</strong> Tornam o produto/serviço impróprio para o consumo ou diminuem seu valor (ex: material de acabamento inferior ao especificado). <br><br> <strong>Vícios de Quantidade:</strong> Ocorrem quando a entrega é inferior ao contratado (ex: área do imóvel menor que a da planta).'},
-            solidezSeguranca: { title: 'Solidez e Segurança', content: 'São os vícios mais graves, pois afetam a estabilidade da obra ou a segurança dos seus usuários. <br><br> <strong>Solidez:</strong> Risco de ruína, problemas estruturais, desabamentos. <br><br> <strong>Segurança (Habitabilidade):</strong> Problemas que tornam o imóvel insalubre ou perigoso, como infiltrações generalizadas, umidade grave, risco de incêndio ou problemas com gás.'}
-        };
+        <div class="max-w-6xl mx-auto grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div class="card p-6">
+                <span class="label-copper">Proprietário</span>
+                <ul class="styled mt-2">
+                    <li>Dispor dos recursos para a obra.</li>
+                    <li>Definir com clareza os objetivos do projeto.</li>
+                    <li>Receber o empreendimento após vistoria.</li>
+                    <li>Usar adequadamente o bem conforme o manual.</li>
+                </ul>
+            </div>
+            <div class="card p-6">
+                <span class="label-copper">Autor do Projeto</span>
+                <ul class="styled mt-2">
+                    <li>Elaborar o projeto coordenado e completo.</li>
+                    <li>Respeitar normas técnicas e regulamentos.</li>
+                    <li>Assumir ônus por erros comprovados.</li>
+                    <li>Direito de ser consultado sobre modificações.</li>
+                </ul>
+            </div>
+            <div class="card p-6">
+                <span class="label-copper">Executante</span>
+                <ul class="styled mt-2">
+                    <li>Examinar projetos e executar conforme especificado.</li>
+                    <li>Manter livro de ocorrências na obra.</li>
+                    <li>Refazer serviços em desacordo sem ônus.</li>
+                    <li>Fornecer o Manual de Uso e Manutenção.</li>
+                </ul>
+            </div>
+            <div class="card p-6">
+                <span class="label-copper">Fiscal</span>
+                <ul class="styled mt-2">
+                    <li>Verificar o cumprimento das disposições contratuais.</li>
+                    <li>Recusar serviços e materiais em desacordo.</li>
+                    <li>Alertar sobre o cumprimento de normas de segurança.</li>
+                    <li>Responder por prejuízos de sua atuação.</li>
+                </ul>
+            </div>
+        </div>
 
-        const fissurasData = {
-            retracao: { title: 'Retração', content: '<strong>Causa:</strong> Perda de água do concreto durante a cura. Acontece por cura ineficiente, alta relação água/cimento ou alto consumo de cimento. <br><strong>Aparência:</strong> Fissuras em forma de "mapa" ou "teia de aranha", geralmente superficiais.' },
-            termica: { title: 'Variação Térmica', content: '<strong>Causa:</strong> Movimentação da estrutura devido a mudanças de temperatura, especialmente em elementos com faces expostas a condições diferentes (ex: lajes de cobertura). <br><strong>Aparência:</strong> Geralmente retilíneas, podendo seccionar a peça.' },
-            esforcos: { title: 'Esforços Estruturais', content: '<strong>Causa:</strong> Tensões de flexão, tração ou cisalhamento superiores à capacidade de resistência do elemento. Podem indicar sobrecarga ou erro de dimensionamento. <br><strong>Aparência:</strong> Padrões definidos, como fissuras verticais no meio de uma viga (flexão) ou inclinadas a 45º perto dos apoios (cisalhamento).' },
-            corrosao: { title: 'Corrosão da Armadura', content: '<strong>Causa:</strong> A oxidação do aço interno expande seu volume, gerando tensões que rompem o concreto de cobrimento. Geralmente causada por um cobrimento insuficiente ou concreto poroso. <br><strong>Aparência:</strong> Fissuras que seguem o trajeto da armadura, muitas vezes acompanhadas de manchas de ferrugem.' },
-            recalque: { title: 'Recalque de Fundação', content: '<strong>Causa:</strong> Afundamento diferencial das fundações, causado por problemas no solo, falha no dimensionamento da fundação ou influência de obras vizinhas. <br><strong>Aparência:</strong> Fissuras inclinadas e bem definidas que "rasgam" as paredes, geralmente partindo de cantos de portas e janelas.' }
-        };
+        <div class="max-w-6xl mx-auto mt-8 grid md:grid-cols-2 gap-6">
+            <div class="highlight-copper">
+                <h3 class="font-bold text-lg mb-2">📝 Registro de Ocorrências</h3>
+                <p class="text-sm" style="color:var(--text-muted)">A norma estabelece a obrigatoriedade de um livro para registro de fatos relevantes durante a execução da obra. É ferramenta crucial para a documentação e delimitação de responsabilidades.</p>
+            </div>
+            <div class="highlight-navy">
+                <h3 class="font-bold text-lg mb-2">📖 Manual de Uso e Manutenção</h3>
+                <p class="text-sm" style="color:var(--text-muted)">O executante deve fornecer ao proprietário um manual com instruções para a correta utilização, conservação e manutenção do imóvel. O mau uso por desobediência ao manual exime o construtor de responsabilidades.</p>
+            </div>
+        </div>
+    </section>
 
-        function setupTabs(tabContainerId, contentContainerId, data, tabClass) {
-            const tabButtonsContainer = document.getElementById(tabContainerId);
-            const tabContentsContainer = document.getElementById(contentContainerId);
-            if (!tabButtonsContainer || !tabContentsContainer) return;
+    <!-- ── PATOLOGIAS ── -->
+    <section id="patologias" class="section-white py-16 fade-in">
+        <h2 class="text-center">Patologias: Vícios e Defeitos na Construção</h2>
+        <div class="section-rule"></div>
+        <p class="subtitle text-center">As falhas construtivas são a manifestação de problemas que podem ocorrer em diversas fases da obra. Entender suas classificações é vital.</p>
 
-            const dataKeys = Object.keys(data);
-            tabButtonsContainer.innerHTML = '';
-            
-            dataKeys.forEach((key, index) => {
-                const item = data[key];
-                const button = document.createElement('button');
-                button.className = `${tabClass} text-sm px-3 py-1 rounded-full border transition ${index === 0 ? 'active' : 'bg-white'}`;
-                button.textContent = item.title;
-                button.dataset.target = key;
-                tabButtonsContainer.appendChild(button);
-            });
+        <!-- Vício vs Defeito -->
+        <div class="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto mb-12">
+            <div class="card p-6" style="border-top:4px solid #C9A84C;">
+                <div class="flex items-center gap-2 mb-3">
+                    <span style="font-size:1.5rem;">⚠️</span>
+                    <h3 class="text-xl" style="color:#8A6620;">Vício Construtivo</h3>
+                </div>
+                <p class="text-sm" style="color:var(--text-muted)">Anomalia que afeta a <strong>qualidade</strong> ou o <strong>desempenho</strong> de um produto ou serviço, tornando-o inadequado ao uso a que se destina ou diminuindo seu valor.</p>
+            </div>
+            <div class="card p-6" style="border-top:4px solid #C0392B;">
+                <div class="flex items-center gap-2 mb-3">
+                    <span style="font-size:1.5rem;">⚡</span>
+                    <h3 class="text-xl" style="color:#C0392B;">Defeito</h3>
+                </div>
+                <p class="text-sm" style="color:var(--text-muted)">Vício que vai além da simples inadequação, colocando em risco a <strong>segurança</strong> do consumidor. O foco está no perigo que representa.</p>
+            </div>
+        </div>
 
-            if (dataKeys.length > 0) {
-                tabContentsContainer.innerHTML = data[dataKeys[0]].content;
+        <!-- Classificação dos Vícios -->
+        <div class="max-w-5xl mx-auto mb-12">
+            <h3 class="text-center text-2xl mb-6">Classificação Detalhada dos Vícios</h3>
+            <div class="p-6 rounded-xl" style="background:var(--bg-white); border:1px solid var(--border); box-shadow:var(--shadow-sm);">
+                <div id="vicios-tabs" class="flex flex-wrap justify-center gap-2 mb-5 pb-4" style="border-bottom:1px solid var(--border);"></div>
+                <div id="vicios-content" class="p-4 rounded-lg text-sm" style="background:var(--bg-ivory); min-height:140px; color:var(--text-muted); line-height:1.8;"></div>
+            </div>
+        </div>
+
+        <!-- Tipologia dos Defeitos -->
+        <div class="max-w-5xl mx-auto mb-12">
+            <h3 class="text-center text-2xl mb-6">Tipologia dos Defeitos (Origem)</h3>
+            <div class="grid sm:grid-cols-3 gap-6">
+                <div class="card p-5 text-center">
+                    <div class="text-2xl mb-2">📐</div>
+                    <h4 class="font-bold mb-2" style="color:var(--navy-deep)">Concepção (Projeto)</h4>
+                    <p class="text-sm" style="color:var(--text-muted)">Erros no projeto, na formulação, no design ou na escolha de materiais inadequados.</p>
+                </div>
+                <div class="card p-5 text-center">
+                    <div class="text-2xl mb-2">🔧</div>
+                    <h4 class="font-bold mb-2" style="color:var(--navy-deep)">Produção (Execução)</h4>
+                    <p class="text-sm" style="color:var(--text-muted)">Falhas durante a fabricação, construção, montagem ou manipulação dos materiais na obra.</p>
+                </div>
+                <div class="card p-5 text-center">
+                    <div class="text-2xl mb-2">📋</div>
+                    <h4 class="font-bold mb-2" style="color:var(--navy-deep)">Informação</h4>
+                    <p class="text-sm" style="color:var(--text-muted)">Instruções insuficientes ou inadequadas sobre a utilização e os riscos do produto ou serviço.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráfico Origem -->
+        <div class="grid md:grid-cols-2 gap-10 max-w-5xl mx-auto items-center mb-12">
+            <div>
+                <h3 class="text-2xl mb-3">Origem das Falhas</h3>
+                <p class="text-sm" style="color:var(--text-muted)">A maioria dos problemas origina-se nas fases de projeto e execução, destacando a importância da qualificação técnica e da supervisão rigorosa.</p>
+            </div>
+            <div class="chart-container">
+                <canvas id="originChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Fissuras -->
+        <div class="max-w-5xl mx-auto">
+            <h3 class="text-center text-2xl mt-12 mb-2">Foco em Fissuras: Causas Comuns</h3>
+            <p class="subtitle text-center text-sm">Explore os diferentes tipos e suas causas para entender como podem ser prevenidas.</p>
+            <div class="p-6 rounded-xl" style="background:var(--bg-white); border:1px solid var(--border); box-shadow:var(--shadow-sm);">
+                <div id="fissuras-tabs" class="flex flex-wrap justify-center gap-2 mb-5 pb-4" style="border-bottom:1px solid var(--border);"></div>
+                <div id="fissuras-content" class="p-4 rounded-lg text-sm" style="background:var(--bg-ivory); min-height:140px; color:var(--text-muted); line-height:1.8;"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── PRAZOS ── -->
+    <section id="prazos" class="py-20 fade-in">
+        <h2 class="text-center">Prazos e Garantias</h2>
+        <div class="section-rule"></div>
+        <p class="subtitle text-center">A legislação estabelece prazos claros para reclamações e garantias na construção civil.</p>
+
+        <div class="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            <div class="prazo-card">
+                <span class="prazo-icon">🗓️</span>
+                <div class="prazo-number">90</div>
+                <div class="prazo-unit">Dias</div>
+                <h3 class="font-bold mt-3 mb-2" style="font-size:1rem; color:var(--navy-deep);">Vícios Aparentes</h3>
+                <p class="text-sm" style="color:var(--text-muted)">Prazo para reclamar de vícios de fácil constatação. Conta-se a partir da entrega do imóvel (CDC, Art. 26).</p>
+            </div>
+            <div class="prazo-card" style="border-top:3px solid var(--copper);">
+                <span class="prazo-icon">🛡️</span>
+                <div class="prazo-number">5</div>
+                <div class="prazo-unit">Anos</div>
+                <h3 class="font-bold mt-3 mb-2" style="font-size:1rem; color:var(--navy-deep);">Solidez e Segurança</h3>
+                <p class="text-sm" style="color:var(--text-muted)">Prazo de garantia legal para solidez e segurança da obra. O construtor responde por defeitos estruturais (Código Civil, Art. 618).</p>
+            </div>
+            <div class="prazo-card">
+                <span class="prazo-icon">⚖️</span>
+                <div class="prazo-number">10</div>
+                <div class="prazo-unit">Anos</div>
+                <h3 class="font-bold mt-3 mb-2" style="font-size:1rem; color:var(--navy-deep);">Prazo Prescricional</h3>
+                <p class="text-sm" style="color:var(--text-muted)">Se um defeito de solidez aparecer dentro da garantia de 5 anos, o proprietário tem até 10 anos (Súmula 194, STJ) para ação judicial.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── ANÁLISE / RESPONSABILIDADE ── -->
+    <section id="responsabilidade" class="section-white py-16 fade-in">
+        <h2 class="text-center">Análise Visual das Responsabilidades</h2>
+        <div class="section-rule"></div>
+        <p class="subtitle text-center">A responsabilidade pode ser objetiva (independe de culpa) ou subjetiva (baseada na comprovação de culpa). Veja como cada agente se posiciona.</p>
+
+        <div class="w-full max-w-3xl mx-auto px-4 mb-12">
+            <div class="chart-container">
+                <canvas id="responsibilityChart"></canvas>
+            </div>
+            <p class="text-center text-xs mt-4" style="color:var(--text-light);">O gráfico compara a natureza da responsabilidade de cada agente em cinco eixos: Direta, Indireta, Subjetiva, Objetiva e Solidária.</p>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-5 max-w-5xl mx-auto mb-12 px-4">
+            <div class="card p-5 text-center">
+                <h3 class="font-bold text-base mb-2" style="color:var(--navy-deep)">Responsabilidade Legal</h3>
+                <p class="text-sm" style="color:var(--text-muted)">Imposta por lei, de ordem pública. Irrenunciável pelas partes.</p>
+            </div>
+            <div class="card p-5 text-center">
+                <h3 class="font-bold text-base mb-2" style="color:var(--navy-deep)">Responsabilidade Contratual</h3>
+                <p class="text-sm" style="color:var(--text-muted)">Surge do acordo entre as partes, limitada ao que foi convencionado.</p>
+            </div>
+            <div class="card p-5 text-center">
+                <h3 class="font-bold text-base mb-2" style="color:var(--navy-deep)">Responsabilidade Extracontratual</h3>
+                <p class="text-sm" style="color:var(--text-muted)">Origina-se de um ato ilícito que causa dano a outrem.</p>
+            </div>
+        </div>
+
+        <div class="max-w-4xl mx-auto px-4">
+            <div class="highlight-copper">
+                <h3 class="font-bold text-lg mb-2">Medida Preventiva Essencial: Vistoria Cautelar</h3>
+                <p class="text-sm" style="color:var(--text-muted);">Antes de iniciar uma obra, é altamente recomendável realizar uma vistoria técnica detalhada nos imóveis vizinhos. Este laudo documenta as condições preexistentes, protegendo o construtor de ser responsabilizado por danos antigos e garantindo aos vizinhos a integridade do seu patrimônio.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── ÉTICA ── -->
+    <section id="etica" class="py-20 fade-in">
+        <h2 class="text-center">Código de Ética Profissional</h2>
+        <div class="section-rule"></div>
+        <p class="subtitle text-center">A prática profissional é guiada por princípios éticos que asseguram a honra, a responsabilidade e o compromisso com o bem-estar social e ambiental.</p>
+
+        <div class="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+            <div class="card p-6">
+                <div class="text-3xl mb-3">🌱</div>
+                <h3 class="text-lg font-bold mb-2">Princípios Fundamentais</h3>
+                <p class="text-sm" style="color:var(--text-muted);">A profissão é um bem social, e sua prática deve visar a preservação e o desenvolvimento harmônico do ser humano, seu ambiente e seus valores, pautada na honestidade e competência.</p>
+            </div>
+            <div class="card p-6">
+                <div class="text-3xl mb-3">🤝</div>
+                <h3 class="text-lg font-bold mb-2">Deveres do Profissional</h3>
+                <ul class="styled">
+                    <li>Oferecer o saber para o bem da humanidade.</li>
+                    <li>Atuar com lealdade e equidade.</li>
+                    <li>Resguardar o sigilo profissional.</li>
+                    <li>Orientar-se pelos preceitos do desenvolvimento sustentável.</li>
+                </ul>
+            </div>
+            <div class="card p-6">
+                <div class="text-3xl mb-3">🚫</div>
+                <h3 class="text-lg font-bold mb-2">Condutas Vedadas</h3>
+                <ul class="styled">
+                    <li>Usar de privilégio para fins discriminatórios.</li>
+                    <li>Aceitar trabalho sem qualificação adequada.</li>
+                    <li>Formular propostas de honorários vis ou extorsivos.</li>
+                    <li>Intervir em trabalho de outro profissional sem autorização.</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── CONCLUSÃO ── -->
+    <section id="conclusao" class="section-white py-16 fade-in">
+        <h2 class="text-center">Conclusão: Matriz de Responsabilidade</h2>
+        <div class="section-rule"></div>
+        <p class="subtitle text-center">Esta matriz resume o papel principal e a natureza da responsabilidade de cada agente-chave.</p>
+
+        <div class="max-w-4xl mx-auto overflow-x-auto px-4">
+            <table class="matrix-table w-full text-left border-collapse rounded-xl overflow-hidden" style="box-shadow:var(--shadow-md);">
+                <thead>
+                    <tr>
+                        <th>Agente</th>
+                        <th>Papel Principal</th>
+                        <th>Natureza da Responsabilidade</th>
+                    </tr>
+                </thead>
+                <tbody style="background:var(--bg-white);">
+                    <tr>
+                        <td class="agent-name">Dono da Obra / Incorporador</td>
+                        <td>Idealizador, viabilizador do empreendimento.</td>
+                        <td>Primária e, em geral, solidária.</td>
+                    </tr>
+                    <tr>
+                        <td class="agent-name">Construtor</td>
+                        <td>Executor material da obra.</td>
+                        <td>Direta. Objetiva (pela segurança) e contratual.</td>
+                    </tr>
+                    <tr>
+                        <td class="agent-name">Fiscal / Gerenciador</td>
+                        <td>"Olhos técnicos" do dono da obra. Assegura a qualidade da execução.</td>
+                        <td>Indireta. Subjetiva (baseada na culpa por omissão).</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- ── REFERÊNCIAS ── -->
+    <section id="referencias" class="py-20 fade-in">
+        <h2 class="text-center">Referências</h2>
+        <div class="section-rule"></div>
+        <div class="max-w-3xl mx-auto mt-8">
+            <div class="card p-8">
+                <ul class="styled space-y-3">
+                    <li>ASSOCIAÇÃO BRASILEIRA DE NORMAS TÉCNICAS. <strong>NBR 5671</strong>: Participação dos intervenientes em serviços e obras de engenharia e arquitetura. Rio de Janeiro, 1990.</li>
+                    <li>DEL MAR, Carlos Pinto. <strong>A responsabilidade do dono da obra pela construção e nas incorporações imobiliárias.</strong></li>
+                    <li>DEL MAR, Carlos Pinto. <strong>Gerenciamento e fiscalização.</strong></li>
+                    <li>DEL MAR, Carlos Pinto. <strong>Vícios e Defeitos no Código Civil e no Código de Defesa do Consumidor.</strong></li>
+                    <li>PELACANI, Valmir Luiz. <strong>Responsabilidade na Construção Civil.</strong> Cadernos do CREA-PR, n. 7. Curitiba, 2010.</li>
+                    <li>CONSELHO REGIONAL DE ENGENHARIA E AGRONOMIA DE SÃO PAULO (CREA-SP). <strong>Código de Ética Profissional.</strong> Resolução CONFEA n.º 1.002/02.</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<!-- ═══════════════ FOOTER ═══════════════ -->
+<footer>
+    <div class="container mx-auto">
+        <p style="font-family:'Playfair Display',serif; font-size:1.05rem; color:rgba(255,255,255,0.9);">Autoria e edição: Felipe Luz</p>
+        <p class="text-sm mt-2" style="color:rgba(255,255,255,0.45);">&copy; 2024 Análise Interativa de Responsabilidade na Construção Civil — Conteúdo para fins educacionais.</p>
+    </div>
+</footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    Chart.register(ChartDataLabels);
+
+    /* ── PROGRESS BAR ── */
+    const progressBar = document.getElementById('progress-bar');
+    window.addEventListener('scroll', () => {
+        const scrollTop = document.documentElement.scrollTop;
+        const docH = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        progressBar.style.width = ((scrollTop / docH) * 100) + '%';
+    });
+
+    /* ── HAMBURGER ── */
+    document.getElementById('menu-toggle').addEventListener('click', () => {
+        document.getElementById('nav-wrapper').classList.toggle('open');
+    });
+
+    /* ── FADE IN OBSERVER ── */
+    const faders = document.querySelectorAll('.fade-in');
+    const faderObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                faderObserver.unobserve(entry.target);
             }
-
-            tabButtonsContainer.addEventListener('click', (e) => {
-                const targetButton = e.target.closest(`.${tabClass}`);
-                if (targetButton) {
-                    const targetKey = targetButton.dataset.target;
-                    tabButtonsContainer.querySelectorAll(`.${tabClass}`).forEach(btn => btn.classList.remove('active', 'bg-white'));
-                    targetButton.classList.add('active');
-                    tabButtonsContainer.querySelectorAll(`.${tabClass}:not(.active)`).forEach(btn => btn.classList.add('bg-white'));
-                    if (data[targetKey]) {
-                        tabContentsContainer.innerHTML = data[targetKey].content;
-                    }
-                }
-            });
-        }
-        
-        const allAgentsForTabs = [agentData["agente-dono"], agentData["agente-incorporador"], agentData["agente-construtor"], agentData["agente-gerenciador"], agentData["agente-fiscal"]];
-        const tabButtonsContainer = document.getElementById('tab-buttons');
-        const tabContentsContainer = document.getElementById('tab-contents');
-        allAgentsForTabs.forEach((agent, index) => {
-            const button = document.createElement('button');
-            button.className = `tab-btn py-2 px-1 md:px-4 text-sm font-medium text-gray-500 hover:text-gray-700 ${index === 0 ? 'active' : ''}`;
-            button.textContent = agent.title;
-            button.dataset.target = agent.id;
-            tabButtonsContainer.appendChild(button);
-            const content = document.createElement('div');
-            content.id = agent.id;
-            content.className = `tab-content p-4 rounded-lg bg-gray-50 ${index !== 0 ? 'hidden' : ''}`;
-            content.innerHTML = agent.content;
-            tabContentsContainer.appendChild(content);
         });
+    }, { threshold: 0.08 });
+    faders.forEach(f => faderObserver.observe(f));
+
+    /* ── AGENT DATA ── */
+    const agentData = {
+        "agente-dono": { id: "agente-dono", title: "Dono da Obra", content: `<h4 class="font-bold text-base mb-2" style="color:var(--copper)">Dono da Obra</h4><ul class="styled"><li>É o <strong>primeiro responsável</strong> pelos danos causados pela construção a terceiros.</li><li>Determina a execução e geralmente tem o interesse econômico.</li><li>Responde pela escolha de profissionais habilitados (culpa in eligendo).</li><li><strong>Fundamento Legal:</strong> Arts. 186, 927, 932, 933 do Código Civil.</li></ul>` },
+        "agente-incorporador": { id: "agente-incorporador", title: "Incorporador", content: `<h4 class="font-bold text-base mb-2" style="color:var(--copper)">Incorporador</h4><ul class="styled"><li>Promove e realiza a construção para alienação.</li><li><strong>Equipara-se ao construtor</strong> para efeitos de responsabilidade pela solidez e segurança.</li><li><strong>Responde solidariamente com o construtor</strong> pelos defeitos da obra.</li></ul>` },
+        "agente-construtor": { id: "agente-construtor", title: "Construtor", content: `<h4 class="font-bold text-base mb-2" style="color:var(--copper)">O Executor: O Construtor</h4><p class="text-sm mb-3" style="color:var(--text-muted)">Responsável pela execução material e pela perfeição da obra.</p><ul class="styled"><li><strong>Obrigação de Resultado:</strong> Garantir a <strong>solidez e segurança</strong> da edificação.</li><li>Responde pela qualidade dos materiais aplicados e pelos serviços executados.</li><li>Responsabilidade por empreitada de lavor ou de materiais.</li></ul>` },
+        "agente-gerenciador": { id: "agente-gerenciador", title: "Gerenciador", content: `<h4 class="font-bold text-base mb-2" style="color:var(--copper)">O Gerenciador: O Condutor</h4><p class="text-sm mb-3" style="color:var(--text-muted)">Atua como mediador técnico-administrativo entre o dono da obra e os executores.</p><ul class="styled"><li>Programação, Supervisão, Controle, Fiscalização e Consultoria.</li><li>Responsabilidade subjetiva (baseada em culpa por omissão) e contratual.</li></ul>` },
+        "agente-fiscal": { id: "agente-fiscal", title: "Fiscal", content: `<h4 class="font-bold text-base mb-2" style="color:var(--copper)">O Fiscal da Obra: Os Olhos Técnicos</h4><p class="text-sm mb-3" style="color:var(--text-muted)">Focado na inspeção e controle técnico sistemático da obra para garantir conformidade.</p><ul class="styled"><li>Verificar se a execução obedece ao <strong>projeto e às normas</strong>.</li><li>Uma fiscalização omissa pode levar à responsabilização solidária com o construtor.</li></ul>` }
+    };
+
+    /* ── VICIOS DATA ── */
+    const viciosData = {
+        aparentesOcultos: { title: 'Aparentes e Ocultos', content: '<strong>Vícios Aparentes:</strong> São os de fácil constatação, não exigindo conhecimento técnico. <br><br><strong>Vícios Ocultos:</strong> Não são constatáveis de imediato e só aparecem com o tempo ou análise técnica. Podem ser <strong>simples</strong> (reparáveis) ou <strong>redibitórios</strong> (graves, tornando o imóvel impróprio para o uso, como um erro estrutural).' },
+        qualidadeQuantidade: { title: 'Qualidade e Quantidade (CDC)', content: '<strong>Vícios de Qualidade:</strong> Tornam o produto/serviço impróprio para o consumo ou diminuem seu valor (ex: material de acabamento inferior ao especificado). <br><br><strong>Vícios de Quantidade:</strong> Ocorrem quando a entrega é inferior ao contratado (ex: área do imóvel menor que a da planta).' },
+        solidezSeguranca: { title: 'Solidez e Segurança', content: 'São os vícios mais graves, pois afetam a estabilidade da obra ou a segurança dos usuários. <br><br><strong>Solidez:</strong> Risco de ruína, problemas estruturais, desabamentos. <br><br><strong>Segurança (Habitabilidade):</strong> Problemas que tornam o imóvel insalubre ou perigoso, como infiltrações, umidade grave, risco de incêndio ou problemas com gás.' }
+    };
+
+    /* ── FISSURAS DATA ── */
+    const fissurasData = {
+        retracao: { title: 'Retração', content: '<strong>Causa:</strong> Perda de água do concreto durante a cura — cura ineficiente, alta relação água/cimento ou alto consumo de cimento. <br><strong>Aparência:</strong> Fissuras em forma de "mapa" ou "teia de aranha", geralmente superficiais.' },
+        termica: { title: 'Variação Térmica', content: '<strong>Causa:</strong> Movimentação da estrutura devido a mudanças de temperatura, especialmente em elementos com faces expostas a condições diferentes (ex: lajes de cobertura). <br><strong>Aparência:</strong> Geralmente retilíneas, podendo seccionar a peça.' },
+        esforcos: { title: 'Esforços Estruturais', content: '<strong>Causa:</strong> Tensões de flexão, tração ou cisalhamento superiores à capacidade de resistência. Podem indicar sobrecarga ou erro de dimensionamento. <br><strong>Aparência:</strong> Padrões definidos — fissuras verticais no meio de uma viga (flexão) ou inclinadas a 45° perto dos apoios (cisalhamento).' },
+        corrosao: { title: 'Corrosão da Armadura', content: '<strong>Causa:</strong> A oxidação do aço interno expande seu volume, gerando tensões que rompem o concreto de cobrimento. Causada por cobrimento insuficiente ou concreto poroso. <br><strong>Aparência:</strong> Fissuras que seguem o trajeto da armadura, muitas vezes com manchas de ferrugem.' },
+        recalque: { title: 'Recalque de Fundação', content: '<strong>Causa:</strong> Afundamento diferencial das fundações, causado por problemas no solo, falha no dimensionamento ou influência de obras vizinhas. <br><strong>Aparência:</strong> Fissuras inclinadas e bem definidas que "rasgam" as paredes, geralmente partindo de cantos de portas e janelas.' }
+    };
+
+    /* ── SETUP TABS (pills) ── */
+    function setupTabs(tabContainerId, contentContainerId, data, tabClass) {
+        const tabButtonsContainer = document.getElementById(tabContainerId);
+        const tabContentsContainer = document.getElementById(contentContainerId);
+        if (!tabButtonsContainer || !tabContentsContainer) return;
+
+        const dataKeys = Object.keys(data);
+        tabButtonsContainer.innerHTML = '';
+
+        dataKeys.forEach((key, index) => {
+            const item = data[key];
+            const button = document.createElement('button');
+            button.className = `${tabClass} ${index === 0 ? 'active' : ''}`;
+            button.textContent = item.title;
+            button.dataset.target = key;
+            tabButtonsContainer.appendChild(button);
+        });
+
+        if (dataKeys.length > 0) {
+            tabContentsContainer.innerHTML = data[dataKeys[0]].content;
+        }
 
         tabButtonsContainer.addEventListener('click', (e) => {
-            if (e.target.classList.contains('tab-btn')) {
-                const targetId = e.target.dataset.target;
-                tabButtonsContainer.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-                e.target.classList.add('active');
-                tabContentsContainer.querySelectorAll('.tab-content').forEach(content => {
-                    content.id === targetId ? content.classList.remove('hidden') : content.classList.add('hidden');
-                });
-            }
-        });
-
-        setupTabs('vicios-tabs', 'vicios-content', viciosData, 'custom-tab');
-        setupTabs('fissuras-tabs', 'fissuras-content', fissurasData, 'custom-tab');
-
-        const navbar = document.getElementById('navbar');
-        navbar.addEventListener('click', function(e) {
-            if (e.target.tagName === 'BUTTON') {
-                const targetId = e.target.getAttribute('data-target');
-                const targetElement = document.getElementById(targetId);
-                if (targetElement) {
-                    window.scrollTo({ top: targetElement.offsetTop - 80, behavior: 'smooth' });
+            const targetButton = e.target.closest(`.${tabClass}`);
+            if (targetButton) {
+                const targetKey = targetButton.dataset.target;
+                tabButtonsContainer.querySelectorAll(`.${tabClass}`).forEach(btn => btn.classList.remove('active'));
+                targetButton.classList.add('active');
+                if (data[targetKey]) {
+                    tabContentsContainer.innerHTML = data[targetKey].content;
                 }
             }
         });
+    }
 
-        const sections = document.querySelectorAll('section');
-        const navBtns = document.querySelectorAll('.nav-btn');
-        const observerOptions = { rootMargin: '-80px 0px 0px 0px', threshold: 0.3 };
-        const observer = new IntersectionObserver(entries => {
-            let visibleSectionId = null;
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    visibleSectionId = entry.target.id;
-                }
+    setupTabs('vicios-tabs', 'vicios-content', viciosData, 'custom-tab');
+    setupTabs('fissuras-tabs', 'fissuras-content', fissurasData, 'custom-tab');
+
+    /* ── AGENT TABS ── */
+    const allAgents = [agentData["agente-dono"], agentData["agente-incorporador"], agentData["agente-construtor"], agentData["agente-gerenciador"], agentData["agente-fiscal"]];
+    const tabButtonsContainer = document.getElementById('tab-buttons');
+    const tabContentsContainer = document.getElementById('tab-contents');
+
+    allAgents.forEach((agent, index) => {
+        const button = document.createElement('button');
+        button.className = `tab-btn ${index === 0 ? 'active' : ''}`;
+        button.textContent = agent.title;
+        button.dataset.target = agent.id;
+        tabButtonsContainer.appendChild(button);
+
+        const content = document.createElement('div');
+        content.id = agent.id;
+        content.className = `tab-content ${index !== 0 ? 'hidden' : ''}`;
+        content.innerHTML = agent.content;
+        tabContentsContainer.appendChild(content);
+    });
+
+    tabButtonsContainer.addEventListener('click', (e) => {
+        if (e.target.classList.contains('tab-btn')) {
+            const targetId = e.target.dataset.target;
+            tabButtonsContainer.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            e.target.classList.add('active');
+            tabContentsContainer.querySelectorAll('.tab-content').forEach(content => {
+                content.id === targetId ? content.classList.remove('hidden') : content.classList.add('hidden');
             });
-            if(visibleSectionId) {
-                navBtns.forEach(btn => {
-                    btn.classList.toggle('active', btn.dataset.target === visibleSectionId);
-                });
-            }
-        }, observerOptions);
-        sections.forEach(section => observer.observe(section));
+        }
+    });
 
-        document.querySelectorAll('.diagram-node').forEach(node => {
-            node.addEventListener('click', () => {
-                const agentIdMap = {
-                    'agente-usuario': 'agente-dono',
-                    'agente-planejamento': 'agente-incorporador',
-                    'agente-construtor': 'agente-construtor',
-                    'agente-projeto': 'agente-fiscal',
-                    'agente-fabricante': 'agente-construtor'
-                };
-                const targetAgentId = agentIdMap[node.dataset.agent] || 'agente-dono';
-                const agentTab = document.querySelector(`.tab-btn[data-target="${targetAgentId}"]`);
-                const agentSection = document.getElementById('agentes');
-                if (agentTab) {
-                    agentSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    setTimeout(() => agentTab.click(), 500); 
-                }
-            });
-        });
-        
-        const originCtx = document.getElementById('originChart').getContext('2d');
-        new Chart(originCtx, {
-            type: 'pie',
-            data: {
-                labels: ['Projeto', 'Execução', 'Materiais', 'Uso/Manutenção', 'Naturais'],
-                datasets: [{
-                    label: 'Origem das Falhas (%)',
-                    data: [49, 29, 11, 10, 1],
-                    backgroundColor: ['#A0522D', '#D2B48C', '#403D39', '#8a817c', '#c3b39f'],
-                    borderColor: '#F8F7F4',
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { 
-                        position: 'right', 
-                        labels: { font: { family: 'Inter' } } 
-                    },
-                    tooltip: { 
-                        callbacks: { label: (c) => `${c.label}: ${c.raw}%` } 
-                    },
-                    datalabels: {
-                        formatter: (value, ctx) => {
-                            if (value < 5) return '';
-                            return value + '%';
-                        },
-                        color: '#fff',
-                        font: {
-                            weight: 'bold'
-                        }
-                    }
-                }
+    /* ── NAV SCROLL ── */
+    const navbar = document.getElementById('navbar');
+    navbar.addEventListener('click', function (e) {
+        if (e.target.tagName === 'BUTTON') {
+            const targetId = e.target.getAttribute('data-target');
+            const targetElement = document.getElementById(targetId);
+            if (targetElement) {
+                window.scrollTo({ top: targetElement.offsetTop - 80, behavior: 'smooth' });
+                document.getElementById('nav-wrapper').classList.remove('open');
+            }
+        }
+    });
+
+    /* ── INTERSECTION OBSERVER FOR NAV ── */
+    const sections = document.querySelectorAll('section');
+    const navBtns = document.querySelectorAll('.nav-btn');
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                navBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.target === entry.target.id));
             }
         });
+    }, { rootMargin: '-80px 0px -60% 0px', threshold: 0 });
+    sections.forEach(section => observer.observe(section));
 
-        const respCtx = document.getElementById('responsibilityChart').getContext('2d');
-        new Chart(respCtx, {
-            type: 'radar',
-            data: {
-                labels: ['Direta', 'Indireta', 'Subjetiva (c/ Culpa)', 'Objetiva (s/ Culpa)', 'Solidária'],
-                datasets: [{
-                    label: 'Construtor',
-                    data: [5, 1, 2, 5, 4],
-                    backgroundColor: 'rgba(205, 92, 92, 0.2)',
-                    borderColor: 'rgba(205, 92, 92, 1)',
-                    pointBackgroundColor: 'rgba(205, 92, 92, 1)',
-                }, {
-                    label: 'Fiscal / Gerenciador',
-                    data: [1, 5, 5, 1, 4],
-                    backgroundColor: 'rgba(70, 130, 180, 0.2)',
-                    borderColor: 'rgba(70, 130, 180, 1)',
-                    pointBackgroundColor: 'rgba(70, 130, 180, 1)',
-                }, {
-                    label: 'Dono da Obra / Incorporador',
-                    data: [3, 4, 1, 4, 5],
-                    backgroundColor: 'rgba(218, 165, 32, 0.2)',
-                    borderColor: 'rgba(218, 165, 32, 1)',
-                    pointBackgroundColor: 'rgba(218, 165, 32, 1)',
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    r: {
-                        angleLines: { color: '#e2e8f0' },
-                        grid: { color: '#e2e8f0' },
-                        pointLabels: { font: { size: 12, family: 'Inter' }, color: '#403D39' },
-                        ticks: { backdropColor: '#F8F7F4', color: '#6b7280', stepSize: 1 },
-                        suggestedMin: 0,
-                        suggestedMax: 5
-                    }
-                },
-                plugins: {
-                    legend: { position: 'top', labels: { font: { family: 'Inter' } } },
-                    tooltip: { callbacks: { label: (c) => `${c.dataset.label || ''}: ${c.raw} (de 5)` } }
-                }
+    /* ── DIAGRAM CLICKS ── */
+    document.querySelectorAll('.diagram-node').forEach(node => {
+        node.addEventListener('click', () => {
+            const agentIdMap = {
+                'agente-usuario': 'agente-dono',
+                'agente-planejamento': 'agente-incorporador',
+                'agente-construtor': 'agente-construtor',
+                'agente-projeto': 'agente-fiscal',
+                'agente-fabricante': 'agente-construtor'
+            };
+            const targetAgentId = agentIdMap[node.dataset.agent] || 'agente-dono';
+            const agentTab = document.querySelector(`.tab-btn[data-target="${targetAgentId}"]`);
+            const agentSection = document.getElementById('agentes');
+            if (agentTab) {
+                agentSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                setTimeout(() => agentTab.click(), 500);
             }
         });
     });
-    </script>
+
+    /* ── CHART: ORIGEM ── */
+    const originCtx = document.getElementById('originChart').getContext('2d');
+    new Chart(originCtx, {
+        type: 'pie',
+        data: {
+            labels: ['Projeto', 'Execução', 'Materiais', 'Uso / Manutenção', 'Naturais'],
+            datasets: [{
+                label: 'Origem das Falhas (%)',
+                data: [49, 29, 11, 10, 1],
+                backgroundColor: ['#192840', '#A8703A', '#4A6FA5', '#C4A882', '#8DA5C0'],
+                borderColor: '#F3F1EC',
+                borderWidth: 3
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'right', labels: { font: { family: 'Nunito Sans', size: 12 }, padding: 16 } },
+                tooltip: { callbacks: { label: (c) => `${c.label}: ${c.raw}%` } },
+                datalabels: {
+                    formatter: (value) => value < 5 ? '' : value + '%',
+                    color: '#fff',
+                    font: { weight: 'bold', family: 'Nunito Sans', size: 13 }
+                }
+            }
+        }
+    });
+
+    /* ── CHART: RESPONSABILIDADE ── */
+    const respCtx = document.getElementById('responsibilityChart').getContext('2d');
+    new Chart(respCtx, {
+        type: 'radar',
+        data: {
+            labels: ['Direta', 'Indireta', 'Subjetiva\n(c/ Culpa)', 'Objetiva\n(s/ Culpa)', 'Solidária'],
+            datasets: [{
+                label: 'Construtor',
+                data: [5, 1, 2, 5, 4],
+                backgroundColor: 'rgba(168, 112, 58, 0.15)',
+                borderColor: 'rgba(168, 112, 58, 1)',
+                pointBackgroundColor: 'rgba(168, 112, 58, 1)',
+                borderWidth: 2, pointRadius: 4
+            }, {
+                label: 'Fiscal / Gerenciador',
+                data: [1, 5, 5, 1, 4],
+                backgroundColor: 'rgba(36, 59, 85, 0.15)',
+                borderColor: 'rgba(36, 59, 85, 1)',
+                pointBackgroundColor: 'rgba(36, 59, 85, 1)',
+                borderWidth: 2, pointRadius: 4
+            }, {
+                label: 'Dono da Obra / Incorporador',
+                data: [3, 4, 1, 4, 5],
+                backgroundColor: 'rgba(74, 111, 165, 0.15)',
+                borderColor: 'rgba(74, 111, 165, 1)',
+                pointBackgroundColor: 'rgba(74, 111, 165, 1)',
+                borderWidth: 2, pointRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                r: {
+                    angleLines: { color: '#DDD7CC' },
+                    grid: { color: '#DDD7CC' },
+                    pointLabels: { font: { size: 11, family: 'Nunito Sans' }, color: '#192840' },
+                    ticks: { backdropColor: 'transparent', color: '#9B9590', stepSize: 1, font: { size: 10 } },
+                    suggestedMin: 0, suggestedMax: 5
+                }
+            },
+            plugins: {
+                legend: { position: 'top', labels: { font: { family: 'Nunito Sans', size: 12 }, padding: 16 } },
+                tooltip: { callbacks: { label: (c) => `${c.dataset.label || ''}: ${c.raw} / 5` } },
+                datalabels: { display: false }
+            }
+        }
+    });
+});
+</script>
 </body>
 </html>
-
